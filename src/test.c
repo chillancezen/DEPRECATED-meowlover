@@ -2,6 +2,11 @@
 #include <dsm.h>
 #include <virtbus.h>
 #include <stdio.h>
+#include <linkedhash.h>
+#include <message.h>
+#include <virtbus_logic.h>
+
+
 int main()
 {
 #if 0
@@ -62,15 +67,58 @@ int main()
 	
 	printf("%d\n",match_version_number(dsm,0,1,5));
 	//printf("%s\n",buffer);
-	#endif
+	
 	char buffer[128];
 	uint64_t version=0;
+	int rc;
 	struct virtual_bus * bus=alloc_virtual_bus("/cute/meeeow",16);
-	write_dsm_memory_raw( bus->dsm,0,2,"hello world,meeeow");
-	update_dsm_memory_version_with_max_number(bus->dsm,0,2);
-	int rc=issue_bus_read_raw(bus,0,1,buffer);
+	//issue_bus_write_raw(bus,1,1,"hello ,virtual bus");
+	//write_dsm_memory_raw( bus->dsm,0,2,"hello world,meeeow");
+	//update_dsm_memory_version_with_max_number(bus->dsm,0,2);
+	rc=issue_bus_write_generic(bus,0,16,"heelo world");
+	printf("rc:%d\n",rc);
+	rc=issue_bus_write_matched(bus,1,1,"heelo mee",1);
+	printf("rc:%d\n",rc);
+	rc=issue_bus_read_matched(bus,0,1,buffer,&version);
 	
 	//dealloc_virtual_bus(bus);
 	printf("%d %d :%s\n",rc,version,buffer);
+	
+	hashtable_t * ht=hashtable_create(1024);
+	hashtable_set_key_value(ht,18921,(void*)12121);
+	hashtable_set_key_value(ht,18923,(void*)12123);
+	/*
+	hashtable_set_key_value(ht,3,(void*)12);
+	rc=hashtable_delete_key(ht,3);
+	hashtable_set_key_value(ht,3,(void*)121);
+	hashtable_set_key_value(ht,18922,(void*)1212);
+	//rc=hashtable_delete_key(ht,3);
+	=hashtable_get_value(ht,18922);
+	*/
+	//hashtable_delete_key(ht,18921);
+	//hashtable_delete_key(ht,18923);
+	int val;
+	val=hashtable_get_value(ht,18921);
+	printf(" %d\n",val);
+	val=hashtable_get_value(ht,18923);
+	printf(" %d\n",val);
+	
+	struct message_builder builder;
+	char buffer[21];
+	int rc1=message_builder_init(&builder, buffer,sizeof(buffer));
+	struct tlv_header tlv;
+	tlv.type=1;
+	tlv.length=2;
+	rc1=message_builder_add_tlv(&builder,&tlv,"helloworld");
+
+	tlv.type=2;
+	tlv.length=3;
+	rc1=message_builder_add_tlv(&builder,&tlv,"helloworld");
+	message_iterate(&builder,NULL,def_callback);
+	printf("%d\n",builder.message_header_ptr->total_length);
+	#endif
+	printf("%d\n",ENDPOINT_BUFFER_LENGTH);
+	int rc=start_virtbus_logic();
+	printf("%d\n",rc);
 	return 0;
 }

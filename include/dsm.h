@@ -29,6 +29,7 @@ struct dsm_memory{
 struct dsm_item * alloc_dsm_item_array(int nr_of_items);
 void dealloc_dsm_item_array(struct dsm_item *array);
 struct dsm_memory * alloc_dsm_memory(char *node_name,int nr_of_items);
+
 void dealloc_dsm_memory(struct dsm_memory* dsm);
 int read_dsm_memory_raw(struct dsm_memory * dsm,int start_block_index,int nr_of_blocks,char * buffer);
 int write_dsm_memory_raw(struct dsm_memory *dsm,int start_block_index,int nr_of_blocks,char * buffer);

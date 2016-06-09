@@ -26,6 +26,7 @@ int nametree_node_match_key(struct nametree_node * node,char * key);
 void add_node_to_parent(struct nametree_node *parent,struct nametree_node *son);
 int  delete_node_from_parent(struct nametree_node * parent,struct nametree_node * son);
 int nametree_son_node_lookup(struct nametree_node * parent,char * key,struct nametree_node **foundnode);
+
 int add_key_to_name_tree(struct nametree_node * root,char * key_string,void * value,struct nametree_node **added_node);
 int lookup_key_in_name_tree(struct nametree_node * root,char * key_string,struct nametree_node **foundnode);
 int delete_key_from_name_tree(struct nametree_node* root, char * key_string);

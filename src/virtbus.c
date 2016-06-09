@@ -27,7 +27,11 @@ void bus_lock(struct virtual_bus * bus)
 {
 
 }
+int bus_try_lock(struct virtual_bus *bus)
+{
 
+	return TRUE;
+}
 void bus_unlock(struct virtual_bus *bus)
 {
 	
@@ -47,7 +51,7 @@ we copy them into buffer regularly ,and update their version number with maximum
 	uint64_t max_number;
 	
 	if(match_version_number(bus->dsm,start_block_index,nr_of_blocks,*target_version))
-		return VIRTUAL_BUS_MATCHED_VERSION;
+		return -VIRTUAL_BUS_MATCHED_VERSION;
 	rc=read_dsm_memory_raw(bus->dsm,start_block_index,nr_of_blocks,buffer);
 	if(rc==-1)
 		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
@@ -63,6 +67,31 @@ int issue_bus_write_raw(struct virtual_bus *bus,int start_block_index,int nr_of_
 {
 	int rc=0;
 	rc=write_dsm_memory_raw(bus->dsm,start_block_index,nr_of_blocks,buffer);
+	if(rc==-1)
+		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
+	return VIRTUAL_BUS_OK;
+}
+
+int issue_bus_write_matched(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t target_version)
+{/*if version is matched ,write them and update version normally ,otherwise ,return errorcode*/
+	int rc;
+	if(!match_version_number(bus->dsm, start_block_index, nr_of_blocks,target_version))
+		return -VIRTUAL_BUS_VERSION_NOT_MATCH;
+	rc=write_dsm_memory_raw(bus->dsm,start_block_index,nr_of_blocks,buffer);
+	if(rc==-1)
+		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
+	rc=update_dsm_memory_version_with_specific_value(bus->dsm,start_block_index,nr_of_blocks,target_version+1);
+	if(rc==-1)
+		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
+	return VIRTUAL_BUS_OK;
+}
+int issue_bus_write_generic(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer)
+{/*anyway,we just update the version number with the maximum numebr plus one*/
+	int rc;
+	rc=write_dsm_memory_raw(bus->dsm,start_block_index,nr_of_blocks,buffer);
+	if(rc==-1)
+		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
+	rc=update_dsm_memory_version_with_max_number(bus->dsm,start_block_index,nr_of_blocks);
 	if(rc==-1)
 		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
 	return VIRTUAL_BUS_OK;
