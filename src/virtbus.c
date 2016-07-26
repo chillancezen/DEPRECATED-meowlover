@@ -10,6 +10,7 @@ struct virtual_bus  *alloc_virtual_bus(char * bus_name,int nr_of_blocks)
 		bus->dsm=alloc_dsm_memory(bus_name,nr_of_blocks);
 		if(!bus->dsm)
 			goto fails;
+		bus->ref_counnt=0;
 	}
 	return bus;
 	fails:
@@ -21,6 +22,9 @@ void dealloc_virtual_bus(struct virtual_bus *bus)
 {
 	if(bus->dsm)
 		dealloc_dsm_memory(bus->dsm);
+	if(bus->ref_counnt)
+		printf("bug:reference count not equal 0\n");
+	
 	free(bus);
 }
 void bus_lock(struct virtual_bus * bus)
@@ -72,20 +76,21 @@ int issue_bus_write_raw(struct virtual_bus *bus,int start_block_index,int nr_of_
 	return VIRTUAL_BUS_OK;
 }
 
-int issue_bus_write_matched(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t target_version)
+int issue_bus_write_matched(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t * target_version)
 {/*if version is matched ,write them and update version normally ,otherwise ,return errorcode*/
 	int rc;
-	if(!match_version_number(bus->dsm, start_block_index, nr_of_blocks,target_version))
+	if(!match_version_number(bus->dsm, start_block_index, nr_of_blocks,*target_version))
 		return -VIRTUAL_BUS_VERSION_NOT_MATCH;
 	rc=write_dsm_memory_raw(bus->dsm,start_block_index,nr_of_blocks,buffer);
 	if(rc==-1)
 		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
-	rc=update_dsm_memory_version_with_specific_value(bus->dsm,start_block_index,nr_of_blocks,target_version+1);
+	rc=update_dsm_memory_version_with_specific_value(bus->dsm,start_block_index,nr_of_blocks,*target_version+1);
 	if(rc==-1)
 		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
+	*target_version=*target_version+1;
 	return VIRTUAL_BUS_OK;
 }
-int issue_bus_write_generic(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer)
+int issue_bus_write_generic(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t * target_version)
 {/*anyway,we just update the version number with the maximum numebr plus one*/
 	int rc;
 	rc=write_dsm_memory_raw(bus->dsm,start_block_index,nr_of_blocks,buffer);
@@ -94,5 +99,7 @@ int issue_bus_write_generic(struct virtual_bus * bus,int start_block_index,int n
 	rc=update_dsm_memory_version_with_max_number(bus->dsm,start_block_index,nr_of_blocks);
 	if(rc==-1)
 		return -VIRTUAL_BUS_ERROR_INVALID_ARG;
+	*target_version=maxmum_version_number(bus->dsm,start_block_index,nr_of_blocks);
+	
 	return VIRTUAL_BUS_OK;
 }

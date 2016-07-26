@@ -8,7 +8,8 @@
 struct virtual_bus
 {
 	struct dsm_memory *dsm;
-	
+
+	int ref_counnt;
 	/*locking is preserved in case I need to implement bus logic in multi-thraed context*/
 	int bus_is_locked:1;
 };
@@ -20,8 +21,11 @@ void bus_unlock(struct virtual_bus *bus);
 int issue_bus_read_raw(struct virtual_bus *bus,int start_block_index,int nr_of_blocks,char *buffer);
 int issue_bus_read_matched(struct virtual_bus * bus ,int start_block_index,int nr_of_blocks,char *buffer,uint64_t *target_version);
 int issue_bus_write_raw(struct virtual_bus *bus,int start_block_index,int nr_of_blocks,char *buffer);
-int issue_bus_write_matched(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t target_version);
-int issue_bus_write_generic(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer);
+//int issue_bus_write_matched(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t target_version);
+//int issue_bus_write_generic(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer);
+int issue_bus_write_matched(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t * target_version);
+int issue_bus_write_generic(struct virtual_bus * bus,int start_block_index,int nr_of_blocks,char *buffer,uint64_t * target_version);
+
 
 #endif
 

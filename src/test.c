@@ -9,16 +9,20 @@
 
 int main()
 {
+
 #if 0
 
 	//char dst[10][64];
 	struct nametree_node * root_node=alloc_nametree_node();
-	initalize_nametree_node(root_node,"meeeow",NULL);
+	struct nametree_node * node;
+	//initalize_nametree_node(root_node,"meeeow",NULL);
+	
 
 	struct nametree_node * sub_node=alloc_nametree_node();
 	initalize_nametree_node(sub_node,"cute",NULL);
 	add_node_to_parent(root_node,sub_node);
 
+	#if 1
 
 	struct nametree_node * sub_node1=alloc_nametree_node();
 	initalize_nametree_node(sub_node1,"cute2",NULL);
@@ -28,23 +32,25 @@ int main()
 	
 //	int rc=nametree_son_node_lookup(root_node,"cute1",&node);
 
-	struct nametree_node * node;
+	
 
 	add_key_to_name_tree(root_node,"/meeeowworld",NULL,&node);
-	#if 1
+	
 	add_key_to_name_tree(root_node,"/hello11/hhh",NULL,&node);
 	add_key_to_name_tree(root_node,"/hello11/hhh1/hello",NULL,&node);
 	add_key_to_name_tree(root_node,"/hello22/hoo",NULL,&node);
 	add_key_to_name_tree(root_node,"/hello22/hoo1",NULL,&node);
-	#endif
+	
 	add_key_to_name_tree(root_node,"/helloworld/hoo1/cute/heloworld",NULL,&node);
-	add_key_to_name_tree(root_node,"/helloworld/hoo1/cute2/missant",NULL,&node);
+	#endif
+	add_key_to_name_tree(root_node,"/helloworld/hoo1/cute2/missant1",NULL,&node);
 	//int rc=lookup_key_in_name_tree(root_node,"/hello22/hoo",&node);
 	//printf("%d:%s\n",rc,node->node_key);
-	delete_key_from_name_tree(root_node,"/helloworld/hoo1/cute2/missant1");
+	int rc=delete_key_from_name_tree(root_node,"/helloworld/hoo1/cute2/missant1");
 	
 	dump_nametree(root_node,0);
-	//printf("%d %s\n",rc,node->node_key);
+	printf("%d\n",rc);
+
 
 	printf("dsm cache lien:%d\n",1<<CACHE_LINE_BIT);
 	
@@ -116,9 +122,11 @@ int main()
 	rc1=message_builder_add_tlv(&builder,&tlv,"helloworld");
 	message_iterate(&builder,NULL,def_callback);
 	printf("%d\n",builder.message_header_ptr->total_length);
-	#endif
+	
 	printf("%d\n",ENDPOINT_BUFFER_LENGTH);
+	#endif
 	int rc=start_virtbus_logic();
 	printf("%d\n",rc);
+	
 	return 0;
 }

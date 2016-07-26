@@ -62,6 +62,22 @@ int message_iterate(struct message_builder *builder,void * argument,void (*callb
 	}
 	return 0;
 }
+int message_parse_raw(struct message_header *header,void* tlv_start,struct tlv_header * tlv,void**value)
+{/*tlv->type must be set before calling this function*/
+	int idx=0;
+	int iptr=0;
+	struct tlv_header * tlv_tmp;
+	for(idx=0;idx<header->tlv_number;idx++){
+		tlv_tmp=(struct tlv_header*)(iptr+(char*)tlv_start);
+		if(tlv_tmp->type==tlv->type){
+			tlv->length=tlv_tmp->length;
+			*value=(void*)(sizeof(struct tlv_header)+iptr+(char*)tlv_start);
+			return 0;
+		}
+		iptr+=sizeof(struct tlv_header)+tlv_tmp->length;
+	}
+	return -1;
+}
 /*this does not requires header and tlv_start must be consecutive*/
 int message_iterate_raw(struct message_header *header,void *tlv_start,void * argument,void (*callback)(struct tlv_header* _tlv,void *_value,void *_arg))
 {
@@ -81,4 +97,34 @@ int message_iterate_raw(struct message_header *header,void *tlv_start,void * arg
 void def_callback(struct tlv_header*tlv,void * value,void * arg)
 {
 	printf("%x %d %02c:%02c\n",tlv->type,tlv->length,*(char*)value,*(1+(char*)value));
+}
+
+int send_data_with_quantum(int fd,char * buffer, int length)
+{
+	int rc;
+	int pending=length;
+	int iptr=0;
+	while(pending>0){
+		rc=send(fd,buffer+iptr,pending,0);
+		if(!rc)
+			break;
+		pending-=rc;
+		iptr+=rc;
+	}
+	return iptr;
+}
+
+int recv_data_with_quantum(int fd,char *buffer,int length)
+{
+	int rc;
+	int pending = length;
+	int iptr = 0;
+	while(pending >0){
+		rc=recv(fd,buffer+iptr,pending,0);
+		if(!rc)
+			break;
+		pending-=rc;
+		iptr+=rc;
+	}
+	return iptr;
 }

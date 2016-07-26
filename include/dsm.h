@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <errorcode.h>
 #define CACHE_LINE_BIT  6
+#define CACHE_LINE_SIZE (1<<CACHE_LINE_BIT)
 
 
 
