@@ -121,3 +121,11 @@ int match_version_number(struct dsm_memory*dsm,int start_block_index,int nr_of_b
 
 	return TRUE;
 }
+uint64_t get_equal_version_number(struct dsm_memory*dsm,int start_block_idnex,int nr_of_blocks)
+{
+	uint64_t version_number=maxmum_version_number(dsm,start_block_idnex,nr_of_blocks);
+	int rc=match_version_number(dsm,start_block_idnex,nr_of_blocks,version_number);
+	if(rc==FALSE)
+		version_number=0;
+	return version_number;
+}
