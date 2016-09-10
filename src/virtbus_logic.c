@@ -483,7 +483,7 @@ int start_virtbus_logic()
 						free(tmp_endpoint);
 						break;
 					default:
-
+						
 						break;
 				}
 				
